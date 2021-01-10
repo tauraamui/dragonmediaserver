@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/takama/daemon"
 	"github.com/tauraamui/dragonmediaserver/db"
+	"github.com/tauraamui/dragonmediaserver/web"
 )
 
 const (
@@ -55,7 +57,14 @@ func (service *Service) Manage() (string, error) {
 		os.Exit(1)
 	}
 
-	db.Setup(dbConn)
+	err = db.Setup(dbConn)
+	if err != nil {
+		errlog.Printf("Unable to setup database: %v\n", err)
+		os.Exit(1)
+	}
+
+	server := web.NewServer(dbConn)
+	go http.ListenAndServe("localhost:8080", server)
 
 	killSignal := <-interrupt
 	stdlog.Println("Received signal:", killSignal)

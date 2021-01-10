@@ -12,10 +12,10 @@ type User struct {
 	Username string
 	Email    string
 	AuthHash []byte
+	Admin    bool
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	u.ID = 1
 	u.UUID = uuid.New().String()
 	hash, err := plainToHash(u.AuthHash)
 	if err != nil {
