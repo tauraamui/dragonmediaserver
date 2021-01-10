@@ -3,6 +3,7 @@ module github.com/tauraamui/dragonmediaserver
 go 1.13
 
 require (
+	github.com/GeertJohan/go.rice v1.0.2 // indirect
 	github.com/google/uuid v1.1.4
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
