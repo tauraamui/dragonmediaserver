@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"syscall"
 
+	rice "github.com/GeertJohan/go.rice"
 	"github.com/takama/daemon"
 	"github.com/tauraamui/dragonmediaserver/db"
 	"github.com/tauraamui/dragonmediaserver/web"
@@ -63,7 +64,13 @@ func (service *Service) Manage() (string, error) {
 		os.Exit(1)
 	}
 
-	server := web.NewServer(dbConn)
+	riceBox, err := rice.FindBox("ui")
+	if err != nil {
+		errlog.Printf("Unable to load static resources: %v\n", err)
+		os.Exit(1)
+	}
+
+	server := web.NewServer(dbConn, riceBox)
 	go http.ListenAndServe("localhost:8080", server)
 
 	killSignal := <-interrupt
