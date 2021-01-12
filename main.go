@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
+	"time"
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/takama/daemon"
@@ -64,14 +65,33 @@ func (service *Service) Manage() (string, error) {
 		os.Exit(1)
 	}
 
-	riceBox, err := rice.FindBox("ui")
+	htmlRiceBox, err := rice.FindBox("ui/html")
 	if err != nil {
-		errlog.Printf("Unable to load static resources: %v\n", err)
+		errlog.Printf("Unable to load HTML resources: %v\n", err)
 		os.Exit(1)
 	}
 
-	server := web.NewServer(dbConn, riceBox)
-	go http.ListenAndServe("localhost:8080", server)
+	publicRiceBox, err := rice.FindBox("public")
+	if err != nil {
+		errlog.Printf("Unable to load public resources: %v\n", err)
+		os.Exit(1)
+	}
+
+	server := web.NewServer(stdlog, errlog, dbConn, htmlRiceBox, publicRiceBox)
+	srv := &http.Server{
+		Addr:         "localhost:8080",
+		WriteTimeout: time.Second * 60,
+		ReadTimeout:  time.Second * 60,
+		IdleTimeout:  time.Second * 120,
+		Handler:      server,
+	}
+
+	go func() {
+		err = srv.ListenAndServe()
+		if err != nil {
+			errlog.Printf("Unable to start server: %v\n", err)
+		}
+	}()
 
 	killSignal := <-interrupt
 	stdlog.Println("Received signal:", killSignal)
