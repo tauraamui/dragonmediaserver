@@ -46,7 +46,6 @@ type Config struct {
 // Load parses configuration file and loads settings
 func Load(stdlog, errlog *log.Logger) Config {
 	configPath := os.Getenv("DRAGON_DAEMON_CONFIG")
-	stdlog.Printf("Loading config at: %s", configPath)
 	if configPath == "" {
 		configPath = "dd.config"
 	}
