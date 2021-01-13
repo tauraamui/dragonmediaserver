@@ -9,6 +9,7 @@ require (
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/takama/daemon v1.0.0
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
+	gopkg.in/dealancer/validate.v2 v2.1.0
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.20.8
 	honnef.co/go/tools v0.1.0

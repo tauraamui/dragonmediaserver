@@ -6,6 +6,7 @@ import (
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/julienschmidt/httprouter"
+	"github.com/tauraamui/dragonmediaserver/config"
 	"gorm.io/gorm"
 )
 
@@ -15,6 +16,7 @@ type Server struct {
 	htmlRiceBox    *rice.Box
 	publicRiceBox  *rice.Box
 	router         *httprouter.Router
+	cameras        []config.Camera
 }
 
 func NewServer(
@@ -22,6 +24,8 @@ func NewServer(
 	db *gorm.DB,
 	htmlRiceBox, publicRiceBox *rice.Box,
 ) *Server {
+	cfg := config.Load(stdlog, errlog)
+
 	server := Server{
 		stdlog:        stdlog,
 		errlog:        errlog,
@@ -29,6 +33,7 @@ func NewServer(
 		htmlRiceBox:   htmlRiceBox,
 		publicRiceBox: publicRiceBox,
 		router:        httprouter.New(),
+		cameras:       cfg.Cameras,
 	}
 	server.routes()
 	return &server
