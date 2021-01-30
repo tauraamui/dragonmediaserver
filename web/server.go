@@ -24,8 +24,6 @@ func NewServer(
 	db *gorm.DB,
 	htmlRiceBox, publicRiceBox *rice.Box,
 ) *Server {
-	cfg := config.Load(stdlog, errlog)
-
 	server := Server{
 		stdlog:        stdlog,
 		errlog:        errlog,
@@ -41,4 +39,14 @@ func NewServer(
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
+}
+
+type response struct {
+	body string
+	code int
+}
+
+func (r *response) write(w http.ResponseWriter) {
+	w.WriteHeader(r.code)
+	w.Write([]byte(r.body))
 }

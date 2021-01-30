@@ -59,7 +59,7 @@ func (service *Service) Manage() (string, error) {
 		os.Exit(1)
 	}
 
-	err = db.Setup(dbConn)
+	err = db.Setup(dbConn, stdlog)
 	if err != nil {
 		errlog.Printf("Unable to setup database: %v\n", err)
 		os.Exit(1)

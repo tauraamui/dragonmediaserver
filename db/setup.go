@@ -1,17 +1,29 @@
 package db
 
-import "gorm.io/gorm"
+import (
+	"log"
 
-func Setup(dbConn *gorm.DB) error {
+	"gorm.io/gorm"
+)
+
+func Setup(dbConn *gorm.DB, stdlog *log.Logger) error {
+	stdlog.Print("Running auto migrations... ")
 	err := dbConn.AutoMigrate(&User{})
 	if err != nil {
 		return err
 	}
 
+	stdlog.Println("Finished...")
+
+	stdlog.Print("Creating default admin user... ")
+
 	userRepository := NewUserRepository(dbConn)
-	return userRepository.Create(&User{
+	err = userRepository.Create(&User{
 		Username: "admin",
 		AuthHash: []byte("admin"),
 		Admin:    true,
 	})
+
+	stdlog.Println("Finished...")
+	return err
 }
