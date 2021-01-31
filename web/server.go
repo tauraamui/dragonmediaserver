@@ -24,6 +24,7 @@ func NewServer(
 	db *gorm.DB,
 	htmlRiceBox, publicRiceBox *rice.Box,
 ) *Server {
+	cfg := config.LoadDragonDaemonConfig(stdlog, errlog)
 	server := Server{
 		stdlog:        stdlog,
 		errlog:        errlog,

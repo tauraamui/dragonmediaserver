@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,6 +13,7 @@ import (
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/takama/daemon"
+	"github.com/tauraamui/dragonmediaserver/config"
 	"github.com/tauraamui/dragonmediaserver/db"
 	"github.com/tauraamui/dragonmediaserver/web"
 )
@@ -77,9 +79,10 @@ func (service *Service) Manage() (string, error) {
 		os.Exit(1)
 	}
 
+	cfg := config.LoadConfig(stdlog, errlog)
 	server := web.NewServer(stdlog, errlog, dbConn, htmlRiceBox, publicRiceBox)
 	srv := &http.Server{
-		Addr:         "localhost:8080",
+		Addr:         cfg.Address,
 		WriteTimeout: time.Second * 60,
 		ReadTimeout:  time.Second * 60,
 		IdleTimeout:  time.Second * 120,
@@ -87,10 +90,34 @@ func (service *Service) Manage() (string, error) {
 	}
 
 	go func() {
-		err = srv.ListenAndServe()
-		if err != nil {
-			errlog.Printf("Unable to start server: %v\n", err)
+		l, lisErr := net.Listen("tcp", cfg.Address)
+		if lisErr != nil {
+			errlog.Printf("Unable to listen on address: %s... ERROR: %v\n", cfg.Address, lisErr)
+			// service kills itself post start pre signal hook subscribe if server start error
+			interrupt <- os.Interrupt
+			return
 		}
+
+		go func(l net.Listener) {
+			var srvErr error
+			go func(l net.Listener, err error) {
+				err = srv.Serve(l)
+			}(l, srvErr)
+			if srvErr != nil {
+				errlog.Printf("Unable to start web server... ERROR: %v\n", srvErr)
+				// service kills itself post start pre signal hook subscribe if server start error
+				interrupt <- os.Interrupt
+				return
+			}
+			stdlog.Printf("Started web server... listening at [%s]\n", cfg.Address)
+		}(l)
+		// if srvErr := srv.Serve(l); srvErr != nil {
+		// 	errlog.Printf("Unable to start web server... ERROR: %v\n", srvErr)
+		// 	// service kills itself post start pre signal hook subscribe if server start error
+		// 	interrupt <- os.Interrupt
+		// 	return
+		// }
+
 	}()
 
 	killSignal := <-interrupt

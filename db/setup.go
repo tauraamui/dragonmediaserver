@@ -7,7 +7,7 @@ import (
 )
 
 func Setup(dbConn *gorm.DB, stdlog *log.Logger) error {
-	stdlog.Print("Running auto migrations... ")
+	stdlog.Print("Running DB auto migrations... ")
 	err := dbConn.AutoMigrate(&User{})
 	if err != nil {
 		return err
